@@ -1,0 +1,617 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Watch videos on VyaHotstar with a cinematic video player.">
+  <title>Shorts | VyaHotstar</title>
+
+  <link rel="icon" href="VYA NEW.png">
+
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      background: #000;
+      color: #fff;
+      font-family: Arial, sans-serif;
+    }
+
+    .player-container {
+      position: relative;
+      width: 100%;
+      height: 100vh;
+      height: 100dvh;
+      background: #000;
+      overflow: hidden;
+    }
+
+    #youtubePlayer {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      border: 0;
+    }
+
+    .top-bar {
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      z-index: 5;
+      display: flex;
+      align-items: center;
+      gap: 15px;
+      padding: 20px 25px;
+      background: linear-gradient(#000d, transparent);
+      transition: opacity .3s;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 18px;
+      font-weight: bold;
+      white-space: nowrap;
+    }
+
+    .brand-star {
+      display: grid;
+      place-items: center;
+      width: 35px;
+      height: 35px;
+      color: white;
+      background: linear-gradient(135deg, #ff2400, #ff681c);
+      clip-path: polygon(
+        50% 0%, 61% 35%, 98% 35%, 68% 56%,
+        79% 92%, 50% 70%, 21% 92%, 32% 56%,
+        2% 35%, 39% 35%
+      );
+    }
+
+    .back-btn, .fullscreen-top {
+      padding: 10px 14px;
+      border: 1px solid #ffffff30;
+      border-radius: 7px;
+      background: #151515cc;
+      color: white;
+      font-size: 13px;
+      text-decoration: none;
+      cursor: pointer;
+    }
+
+    .back-btn:hover, .fullscreen-top:hover {
+      background: #ff4317;
+    }
+
+    #movieTitle {
+      font-size: 16px;
+      font-weight: bold;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .fullscreen-top {
+      margin-left: auto;
+    }
+
+    .center-play {
+      position: absolute;
+      z-index: 4;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      width: 70px;
+      height: 70px;
+      border: 1px solid #ffffff40;
+      border-radius: 50%;
+      background: #111b;
+      color: white;
+      font-size: 27px;
+      cursor: pointer;
+    }
+
+    .center-play:hover {
+      background: #ff4317;
+    }
+
+    .center-play.hidden {
+      opacity: 0;
+      pointer-events: none;
+    }
+
+    .controls {
+      position: absolute;
+      z-index: 5;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      padding: 35px 25px 22px;
+      background: linear-gradient(transparent, #000e);
+      transition: opacity .3s, transform .3s;
+    }
+
+    .progress-container {
+      width: 100%;
+      height: 5px;
+      margin-bottom: 16px;
+      border-radius: 10px;
+      background: #ffffff45;
+      cursor: pointer;
+    }
+
+    .progress {
+      width: 0%;
+      height: 100%;
+      border-radius: 10px;
+      background: linear-gradient(90deg, #ff2400, #ff681c);
+    }
+
+    .control-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .control-btn {
+      display: grid;
+      place-items: center;
+      width: 40px;
+      height: 40px;
+      border: 1px solid #ffffff25;
+      border-radius: 50%;
+      background: #ffffff12;
+      color: white;
+      font-size: 16px;
+      cursor: pointer;
+      flex-shrink: 0;
+    }
+
+    .control-btn:hover {
+      background: #ff4317;
+    }
+
+    #playButton {
+      background: linear-gradient(135deg, #ff2400, #ff681c);
+    }
+
+    .time {
+      min-width: 105px;
+      margin-left: 4px;
+      color: #ddd;
+      font-size: 12px;
+    }
+
+    .spacer {
+      flex: 1;
+    }
+
+    .volume-wrapper {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .volume-slider {
+      width: 75px;
+      accent-color: #ff4317;
+      cursor: pointer;
+    }
+
+    .player-container.controls-hidden .controls,
+    .player-container.controls-hidden .top-bar {
+      opacity: 0;
+      pointer-events: none;
+    }
+
+    @media (max-width: 600px) {
+      .top-bar {
+        gap: 9px;
+        padding: 14px 12px;
+      }
+
+      .brand {
+        font-size: 14px;
+      }
+
+      .brand span {
+        display: none;
+      }
+
+      #movieTitle {
+        max-width: 40vw;
+        font-size: 13px;
+      }
+
+      .back-btn, .fullscreen-top {
+        padding: 9px;
+        font-size: 12px;
+      }
+
+      .controls {
+        padding: 25px 12px 14px;
+      }
+
+      .control-row {
+        gap: 7px;
+      }
+
+      .control-btn {
+        width: 35px;
+        height: 35px;
+        font-size: 13px;
+      }
+
+      .time {
+        min-width: auto;
+        font-size: 10px;
+      }
+
+      .volume-slider {
+        width: 45px;
+      }
+
+      .center-play {
+        width: 58px;
+        height: 58px;
+      }
+    }
+
+    @media (max-width: 380px) {
+      .volume-wrapper {
+        display: none;
+      }
+
+      .time {
+        font-size: 9px;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <main class="player-container" id="playerContainer">
+
+    <div id="youtubePlayer"></div>
+
+    <header class="top-bar">
+      <div class="brand">
+        <div class="brand-star">★</div>
+        <span>VyaHotstar</span>
+      </div>
+
+      <a href="index.html" class="back-btn">← Back</a>
+
+      <span id="movieTitle">Shorts</span>
+
+      <button class="fullscreen-top" id="fullscreenTopButton"
+              type="button">⛶ Fullscreen</button>
+    </header>
+
+    <button class="center-play" id="centerPlay"
+            type="button" aria-label="Play">▶</button>
+
+    <section class="controls">
+      <div class="progress-container" id="progressContainer"
+           role="slider" aria-label="Video progress"
+           aria-valuemin="0" aria-valuemax="100" tabindex="0">
+        <div class="progress" id="progress"></div>
+      </div>
+
+      <div class="control-row">
+        <button class="control-btn" id="playButton"
+                type="button" aria-label="Play">▶</button>
+
+        <button class="control-btn" id="rewindButton"
+                type="button" aria-label="Rewind 10 seconds">↶</button>
+
+        <button class="control-btn" id="forwardButton"
+                type="button" aria-label="Forward 10 seconds">↷</button>
+
+        <span class="time" id="timeDisplay">00:00 / 00:00</span>
+
+        <div class="spacer"></div>
+
+        <div class="volume-wrapper">
+          <button class="control-btn" id="muteButton"
+                  type="button" aria-label="Mute">🔊</button>
+
+          <input class="volume-slider" id="volumeSlider"
+                 type="range" min="0" max="100" value="100"
+                 aria-label="Volume">
+        </div>
+
+        <button class="control-btn" id="fullscreenButton"
+                type="button" aria-label="Fullscreen">⛶</button>
+      </div>
+    </section>
+  </main>
+
+  <script src="https://www.youtube.com/iframe_api"></script>
+
+  <script>
+    // One YouTube video
+    const DEFAULT_VIDEO_ID = "hWh23h40t00";
+
+    const params = new URLSearchParams(location.search);
+    const videoId = params.get("video") || DEFAULT_VIDEO_ID;
+    const title = params.get("title") || "Shorts";
+
+    document.getElementById("movieTitle").textContent = title;
+    document.title = title + " | VyaHotstar";
+
+    const container = document.getElementById("playerContainer");
+    const playButton = document.getElementById("playButton");
+    const centerPlay = document.getElementById("centerPlay");
+    const progress = document.getElementById("progress");
+    const progressContainer = document.getElementById("progressContainer");
+    const timeDisplay = document.getElementById("timeDisplay");
+    const volumeSlider = document.getElementById("volumeSlider");
+    const muteButton = document.getElementById("muteButton");
+
+    let player = null;
+    let progressTimer = null;
+    let hideTimer = null;
+
+    function onYouTubeIframeAPIReady() {
+      player = new YT.Player("youtubePlayer", {
+        width: "100%",
+        height: "100%",
+        videoId: videoId,
+        playerVars: {
+          autoplay: 1,
+          controls: 0,
+          fs: 0,
+          playsinline: 1,
+          rel: 0,
+          enablejsapi: 1
+        },
+        events: {
+          onReady: onPlayerReady,
+          onStateChange: onPlayerStateChange,
+          onError: function(event) {
+            console.error("YouTube player error:", event.data);
+            timeDisplay.textContent = "Video unavailable";
+          }
+        }
+      });
+    }
+
+    function onPlayerReady(event) {
+      event.target.setVolume(100);
+      updateTime();
+      showControls();
+    }
+
+    function onPlayerStateChange(event) {
+      if (event.data === YT.PlayerState.PLAYING) {
+        playButton.textContent = "❚❚";
+        playButton.setAttribute("aria-label", "Pause");
+        centerPlay.classList.add("hidden");
+        startProgressTimer();
+        showControls();
+      } else if (
+        event.data === YT.PlayerState.PAUSED ||
+        event.data === YT.PlayerState.ENDED
+      ) {
+        playButton.textContent = "▶";
+        playButton.setAttribute("aria-label", "Play");
+        centerPlay.classList.remove("hidden");
+        stopProgressTimer();
+        updateTime();
+        showControls();
+      } else if (event.data === YT.PlayerState.BUFFERING) {
+        showControls();
+      }
+    }
+
+    function togglePlay() {
+      if (!player) return;
+
+      if (player.getPlayerState() === YT.PlayerState.PLAYING) {
+        player.pauseVideo();
+      } else {
+        player.playVideo();
+      }
+
+      showControls();
+    }
+
+    playButton.addEventListener("click", togglePlay);
+    centerPlay.addEventListener("click", togglePlay);
+
+    document.getElementById("rewindButton").addEventListener("click", () => {
+      if (!player) return;
+      player.seekTo(Math.max(0, player.getCurrentTime() - 10), true);
+      showControls();
+    });
+
+    document.getElementById("forwardButton").addEventListener("click", () => {
+      if (!player) return;
+      const duration = player.getDuration();
+      player.seekTo(Math.min(duration, player.getCurrentTime() + 10), true);
+      showControls();
+    });
+
+    function startProgressTimer() {
+      stopProgressTimer();
+      progressTimer = setInterval(updateTime, 500);
+    }
+
+    function stopProgressTimer() {
+      clearInterval(progressTimer);
+      progressTimer = null;
+    }
+
+    function updateTime() {
+      if (!player || typeof player.getCurrentTime !== "function") return;
+
+      const current = player.getCurrentTime() || 0;
+      const duration = player.getDuration() || 0;
+
+      if (duration > 0) {
+        progress.style.width = (current / duration * 100) + "%";
+        progressContainer.setAttribute(
+          "aria-valuenow",
+          Math.round(current / duration * 100)
+        );
+      }
+
+      timeDisplay.textContent =
+        formatTime(current) + " / " + formatTime(duration);
+    }
+
+    function formatTime(seconds) {
+      seconds = Math.floor(Number(seconds) || 0);
+      const minutes = Math.floor(seconds / 60);
+      const remaining = seconds % 60;
+
+      return String(minutes).padStart(2, "0") + ":" +
+             String(remaining).padStart(2, "0");
+    }
+
+    function seekFromPosition(clientX) {
+      if (!player) return;
+
+      const rect = progressContainer.getBoundingClientRect();
+      const ratio = Math.max(0, Math.min(1, (clientX - rect.left) / rect.width));
+      const duration = player.getDuration();
+
+      if (duration > 0) {
+        player.seekTo(duration * ratio, true);
+      }
+
+      showControls();
+    }
+
+    progressContainer.addEventListener("click", event => {
+      seekFromPosition(event.clientX);
+    });
+
+    progressContainer.addEventListener("keydown", event => {
+      if (event.key === "ArrowLeft" || event.key === "ArrowRight") {
+        event.preventDefault();
+        if (!player) return;
+
+        const change = event.key === "ArrowRight" ? 5 : -5;
+        player.seekTo(
+          Math.max(0, Math.min(
+            player.getDuration(),
+            player.getCurrentTime() + change
+          )),
+          true
+        );
+      }
+    });
+
+    volumeSlider.addEventListener("input", () => {
+      if (!player) return;
+
+      const volume = Number(volumeSlider.value);
+      player.setVolume(volume);
+
+      if (volume === 0) {
+        player.mute();
+        muteButton.textContent = "🔇";
+      } else {
+        player.unMute();
+        muteButton.textContent = "🔊";
+      }
+    });
+
+    muteButton.addEventListener("click", () => {
+      if (!player) return;
+
+      if (player.isMuted()) {
+        player.unMute();
+        const volume = player.getVolume() || 100;
+        player.setVolume(volume);
+        volumeSlider.value = volume;
+        muteButton.textContent = "🔊";
+      } else {
+        player.mute();
+        volumeSlider.value = 0;
+        muteButton.textContent = "🔇";
+      }
+
+      showControls();
+    });
+
+    async function goFullscreen() {
+      try {
+        if (document.fullscreenElement) {
+          await document.exitFullscreen();
+        } else if (container.requestFullscreen) {
+          await container.requestFullscreen();
+        }
+      } catch (error) {
+        console.error("Fullscreen unavailable:", error);
+      }
+    }
+
+    document.getElementById("fullscreenButton")
+      .addEventListener("click", goFullscreen);
+
+    document.getElementById("fullscreenTopButton")
+      .addEventListener("click", goFullscreen);
+
+    function showControls() {
+      container.classList.remove("controls-hidden");
+      clearTimeout(hideTimer);
+
+      hideTimer = setTimeout(() => {
+        if (player &&
+            player.getPlayerState() === YT.PlayerState.PLAYING) {
+          container.classList.add("controls-hidden");
+        }
+      }, 3500);
+    }
+
+    container.addEventListener("mousemove", showControls);
+    container.addEventListener("touchstart", showControls, { passive: true });
+
+    document.addEventListener("keydown", event => {
+      if (!player || event.target.matches("input")) return;
+
+      switch (event.code) {
+        case "Space":
+          event.preventDefault();
+          togglePlay();
+          break;
+
+        case "ArrowLeft":
+          event.preventDefault();
+          player.seekTo(Math.max(0, player.getCurrentTime() - 10), true);
+          showControls();
+          break;
+
+        case "ArrowRight":
+          event.preventDefault();
+          player.seekTo(
+            Math.min(player.getDuration(), player.getCurrentTime() + 10),
+            true
+          );
+          showControls();
+          break;
+
+        case "KeyM":
+          muteButton.click();
+          break;
+
+        case "KeyF":
+          goFullscreen();
+          break;
+      }
+    });
+
+    showControls();
+  </script>
+</body>
+</html>
